@@ -716,6 +716,8 @@ function getWeekViewHeader(_a) {
     var days = [];
     var _loop_2 = function (i) {
         var date = __WEBPACK_IMPORTED_MODULE_0_date_fns_add_days___default()(start, i);
+        // Another very hacky fix for timezone issues
+        date.setHours(12);
         if (!excluded.some(function (e) { return date.getDay() === e; })) {
             days.push(getWeekDay({ date: date, weekendDays: weekendDays }));
         }
