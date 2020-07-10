@@ -831,6 +831,8 @@ function getMonthView(_a) {
                 date: date,
                 weekendDays: weekendDays
             });
+            // Very hacky fix for timezone issues
+            day.date.setHours(12);
             var eventsInPeriod = getEventsInPeriod({
                 events: eventsInMonth,
                 periodStart: __WEBPACK_IMPORTED_MODULE_18_date_fns_start_of_day___default()(date),
