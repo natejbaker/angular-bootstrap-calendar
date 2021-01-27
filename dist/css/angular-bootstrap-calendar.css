@@ -582,7 +582,6 @@ mwl-calendar .cal-year-box a.event-item-action {
 mwl-calendar .events-list {
   padding-left: 5px;
   overflow-y: auto;
-  overflow-x: hidden;
 }
 mwl-calendar .unexpanded {
   max-height: 47px;
