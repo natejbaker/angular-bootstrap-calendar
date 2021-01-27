@@ -1194,13 +1194,13 @@ module.exports = "<div class=\"cal-day-panel-hour\">\n\n  <div class=\"cal-day-h
 /* 13 */
 /***/ (function(module, exports) {
 
-module.exports = "<div\n  mwl-droppable\n  on-drop=\"vm.handleEventDrop(dropData.event, day.date, dropData.draggedFromDate)\"\n  mwl-drag-select=\"!!vm.onDateRangeSelect\"\n  on-drag-select-start=\"vm.onDragSelectStart(day)\"\n  on-drag-select-move=\"vm.onDragSelectMove(day)\"\n  on-drag-select-end=\"vm.onDragSelectEnd(day)\"\n  class=\"cal-month-day {{ day.cssClass }}\"\n  ng-class=\"{\n    'cal-day-outmonth': !day.inMonth,\n    'cal-day-inmonth': day.inMonth,\n    'cal-day-weekend': day.isWeekend,\n    'cal-day-past': day.isPast,\n    'cal-day-today': day.isToday,\n    'cal-day-future': day.isFuture,\n    'cal-day-selected': vm.dateRangeSelect && vm.dateRangeSelect.startDate <= day.date && day.date <= vm.dateRangeSelect.endDate,\n    'cal-day-open': dayIndex === vm.openDayIndex\n  }\">\n\n  <small\n    class=\"cal-events-num badge badge-important pull-left\"\n    ng-show=\"day.badgeTotal > 0 && (vm.calendarConfig.displayAllMonthEvents || day.inMonth)\"\n    ng-bind=\"day.badgeTotal\">\n  </small>\n\n  <span\n    class=\"pull-right\"\n    data-cal-date\n    ng-click=\"vm.calendarCtrl.dateClicked(day.date)\"\n    ng-bind=\"day.label\">\n  </span>\n\n  <div class=\"cal-day-tick\" ng-show=\"dayIndex === vm.openDayIndex && (vm.cellAutoOpenDisabled || vm.view[vm.openDayIndex].events.length > 0) && !vm.slideBoxDisabled\">\n    <i class=\"glyphicon glyphicon-chevron-up\"></i>\n    <i class=\"fa fa-chevron-up\"></i>\n  </div>\n\n  <ng-include src=\"vm.customTemplateUrls.calendarMonthCellEvents || vm.calendarConfig.templates.calendarMonthCellEvents\"></ng-include>\n\n  <div class=\"cal-week-box-cell\" ng-if=\"$first && rowHovered\">\n    <span ng-bind=\"vm.getWeekNumberLabel(day)\"></span>\n  </div>\n\n</div>\n";
+module.exports = "<div\n  mwl-droppable\n  on-drop=\"vm.handleEventDrop(dropData.event, day.date, dropData.draggedFromDate)\"\n  mwl-drag-select=\"!!vm.onDateRangeSelect\"\n  on-drag-select-start=\"vm.onDragSelectStart(day)\"\n  on-drag-select-move=\"vm.onDragSelectMove(day)\"\n  on-drag-select-end=\"vm.onDragSelectEnd(day)\"\n  class=\"cal-month-day month-day-{{rowOffset}} {{ day.cssClass }}\"\n  ng-class=\"{\n    'cal-day-outmonth': !day.inMonth,\n    'cal-day-inmonth': day.inMonth,\n    'cal-day-weekend': day.isWeekend,\n    'cal-day-past': day.isPast,\n    'cal-day-today': day.isToday,\n    'cal-day-future': day.isFuture,\n    'cal-day-selected': vm.dateRangeSelect && vm.dateRangeSelect.startDate <= day.date && day.date <= vm.dateRangeSelect.endDate,\n    'cal-day-open': dayIndex === vm.openDayIndex\n  }\">\n\n  <small\n    ng-style=\"vm.badgeImportantStyle()\"    class=\"cal-events-num badge badge-important pull-left\"\n    ng-show=\"day.badgeTotal > 0 && (vm.calendarConfig.displayAllMonthEvents || day.inMonth)\"\n    ng-bind=\"day.badgeTotal\">\n  </small>\n\n  <span\n    class=\"pull-right\"\n    data-cal-date\n    ng-click=\"vm.calendarCtrl.dateClicked(day.date)\"\n    ng-bind=\"day.label\">\n  </span>\n\n  <div class=\"cal-day-tick\" ng-show=\"dayIndex === vm.openDayIndex && (vm.cellAutoOpenDisabled || vm.view[vm.openDayIndex].events.length > 0) && !vm.slideBoxDisabled\">\n    <i class=\"glyphicon glyphicon-chevron-up\"></i>\n    <i class=\"fa fa-chevron-up\"></i>\n  </div>\n\n  <ng-include src=\"vm.customTemplateUrls.calendarMonthCellEvents || vm.calendarConfig.templates.calendarMonthCellEvents\"></ng-include>\n\n  <div class=\"cal-week-box-cell\" ng-if=\"$first && rowHovered\">\n    <span ng-bind=\"vm.getWeekNumberLabel(day)\"></span>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 14 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"events-list\" ng-show=\"day.events.length > 0\">\n  <a\n    ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"\n    href=\"#{{event.url}}\"\n    ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\"\n    class=\"pull-left event\"\n    ng-class=\"event.cssClass\"\n    ng-style=\"{backgroundColor: event.color.primary}\"\n    ng-mousedown=\"$event.stopPropagation()\"\n    ng-mouseenter=\"vm.highlightEvent(event, true)\"\n    ng-mouseleave=\"vm.highlightEvent(event, false)\"\n    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.calendarEventTitle.monthViewTooltip(event) | calendarTrustAsHtml\"\n    mwl-draggable=\"event.draggable === true\"\n    drop-data=\"{event: event, draggedFromDate: day.date.toDate()}\"\n    auto-scroll=\"vm.draggableAutoScroll\">\n  </a>\n</div>\n";
+module.exports = "<div ng-class=\"vm.eventsListClass(rowOffset)\" ng-show=\"day.events.length > 0\">\n  <a ng-if=\"vm.textView()\" ng-repeat-start=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"\n    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.calendarEventTitle.monthViewTooltip(event) | calendarTrustAsHtml\"\n    href=\"#{{event.url}}\"\n    ng-style=\"{color: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden', marginBottom: '2px', wordBreak: 'break-word'}\"  ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\">{{ vm.textViewDisplay(event) | calendarTrustAsHtml }}</a><span ng-repeat-end ng-style=\"{visibility: vm.initialized ? 'visible' : 'hidden', marginRight: '2px', marginBottom: '2px'}\" ng-if=\"vm.textView() && !$last\">, </span>  <a\n    ng-if=\"!vm.textView()\"    ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"\n    href=\"#{{event.url}}\"\n    ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\"\n    class=\"pull-left event\"\n    ng-class=\"event.cssClass\"\n    ng-style=\"{backgroundColor: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden'}\"\n    ng-mousedown=\"$event.stopPropagation()\"\n    ng-mouseenter=\"vm.highlightEvent(event, true)\"\n    ng-mouseleave=\"vm.highlightEvent(event, false)\"\n    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.calendarEventTitle.monthViewTooltip(event) | calendarTrustAsHtml\"\n    mwl-draggable=\"event.draggable === true\"\n    drop-data=\"{event: event, draggedFromDate: day.date.toDate()}\"\n    auto-scroll=\"vm.draggableAutoScroll\">\n  </a>\n</div>\n";
 
 /***/ }),
 /* 15 */
@@ -1224,7 +1224,7 @@ module.exports = "<div class=\"cal-week-box\" ng-class=\"[{'cal-day-box': vm.sho
 /* 18 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"cal-year-box\">\n  <div ng-repeat=\"rowOffset in [0, 4, 8] track by rowOffset\">\n    <div class=\"row cal-before-eventlist\">\n      <div\n        class=\"span3 col-md-3 col-xs-6 cal-cell {{ day.cssClass }}\"\n        ng-repeat=\"month in vm.view | calendarLimitTo:4:rowOffset track by $index\"\n        ng-init=\"monthIndex = vm.view.indexOf(month)\"\n        ng-click=\"vm.monthClicked(month, false, $event)\"\n        ng-class=\"{pointer: month.events.length > 0, 'cal-day-today': month.isToday}\"\n        mwl-droppable\n        on-drop=\"vm.handleEventDrop(dropData.event, month.date)\">\n\n        <span\n          class=\"pull-right\"\n          data-cal-date\n          ng-click=\"vm.calendarCtrl.dateClicked(month.date)\"\n          ng-bind=\"month.label\">\n        </span>\n\n        <small\n          class=\"cal-events-num badge badge-important pull-left\"\n          ng-show=\"month.badgeTotal > 0\"\n          ng-bind=\"month.badgeTotal\">\n        </small>\n\n        <div\n          class=\"cal-day-tick\"\n          ng-show=\"monthIndex === vm.openMonthIndex && (vm.cellAutoOpenDisabled || vm.view[vm.openMonthIndex].events.length > 0) && !vm.slideBoxDisabled\">\n          <i class=\"glyphicon glyphicon-chevron-up\"></i>\n          <i class=\"fa fa-chevron-up\"></i>\n        </div>\n\n      </div>\n    </div>\n\n    <mwl-calendar-slide-box\n      is-open=\"vm.openRowIndex === $index && (vm.cellAutoOpenDisabled || vm.view[vm.openMonthIndex].events.length > 0) && !vm.slideBoxDisabled\"\n      events=\"vm.view[vm.openMonthIndex].events\"\n      on-event-click=\"vm.onEventClick\"\n      cell=\"vm.view[vm.openMonthIndex]\"\n      custom-template-urls=\"vm.customTemplateUrls\"\n      template-scope=\"vm.templateScope\">\n    </mwl-calendar-slide-box>\n\n  </div>\n\n</div>\n";
+module.exports = "<div class=\"cal-year-box\">\n  <div ng-repeat=\"rowOffset in [0, 4, 8] track by rowOffset\">\n    <div class=\"row cal-before-eventlist\">\n      <div\n        class=\"span3 col-md-3 col-xs-6 cal-cell {{ day.cssClass }}\"\n        ng-repeat=\"month in vm.view | calendarLimitTo:4:rowOffset track by $index\"\n        ng-init=\"monthIndex = vm.view.indexOf(month)\"\n        ng-click=\"vm.monthClicked(month, false, $event)\"\n        ng-class=\"{pointer: month.events.length > 0, 'cal-day-today': month.isToday}\"\n        mwl-droppable\n        on-drop=\"vm.handleEventDrop(dropData.event, month.date)\">\n\n        <span\n          class=\"pull-right\"\n          data-cal-date\n          ng-click=\"vm.calendarCtrl.dateClicked(month.date)\"\n          ng-bind=\"month.label\">\n        </span>\n\n        <small\n     ng-style=\"vm.badgeImportantStyle()\"     class=\"cal-events-num badge badge-important pull-left\"\n          ng-show=\"month.badgeTotal > 0\"\n          ng-bind=\"month.badgeTotal\">\n        </small>\n\n        <div\n          class=\"cal-day-tick\"\n          ng-show=\"monthIndex === vm.openMonthIndex && (vm.cellAutoOpenDisabled || vm.view[vm.openMonthIndex].events.length > 0) && !vm.slideBoxDisabled\">\n          <i class=\"glyphicon glyphicon-chevron-up\"></i>\n          <i class=\"fa fa-chevron-up\"></i>\n        </div>\n\n      </div>\n    </div>\n\n    <mwl-calendar-slide-box\n      is-open=\"vm.openRowIndex === $index && (vm.cellAutoOpenDisabled || vm.view[vm.openMonthIndex].events.length > 0) && !vm.slideBoxDisabled\"\n      events=\"vm.view[vm.openMonthIndex].events\"\n      on-event-click=\"vm.onEventClick\"\n      cell=\"vm.view[vm.openMonthIndex]\"\n      custom-template-urls=\"vm.customTemplateUrls\"\n      template-scope=\"vm.templateScope\">\n    </mwl-calendar-slide-box>\n\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 19 */
@@ -1404,6 +1404,9 @@ angular
       scope: {
         events: '=',
         view: '=',
+        expandedMonthView: '<',
+        textView: '<',
+        badgeColor: '<',
         viewTitle: '=?',
         viewDate: '=',
         cellIsOpen: '=?',
@@ -2581,7 +2584,7 @@ var angular = __webpack_require__(0);
 
 angular
   .module('mwl.calendar')
-  .controller('MwlCalendarMonthCtrl', ["$scope", "moment", "calendarHelper", "calendarConfig", "calendarEventTitle", function($scope, moment, calendarHelper, calendarConfig, calendarEventTitle) {
+  .controller('MwlCalendarMonthCtrl', ["$scope", "moment", "calendarHelper", "calendarConfig", "calendarEventTitle", "$window", "$timeout", function($scope, moment, calendarHelper, calendarConfig, calendarEventTitle, $window, $timeout) {
 
     var vm = this;
     vm.calendarConfig = calendarConfig;
@@ -2600,6 +2603,96 @@ angular
           }
         });
       }
+    }
+
+    function resizeMonthCells() {
+        var maxAllowedHeight = 47;
+        if(vm.calendarCtrl.expandedMonthView && vm.monthOffsets) {
+            // For each row
+            vm.monthOffsets.forEach(offset => {
+                var elements = document.getElementsByClassName('events-list-' + offset);
+
+                // Get max cell height for row
+                var maxHeight = 0;
+                for(var element of elements) {
+                    if(element.offsetHeight > maxAllowedHeight && element.offsetHeight > maxHeight) {
+                        maxHeight = element.offsetHeight;
+                    }
+                }
+
+                // If needed, update all cells to max height
+                if(maxHeight > 0) {
+                    updateMonthDayCellsHeight(offset, 100 + (maxHeight - maxAllowedHeight));
+                }
+            });
+        }
+
+        // Reset heights to 100px
+        if(!vm.calendarCtrl.expandedMonthView && vm.monthOffsets) {
+            vm.monthOffsets.forEach(offset => {
+                updateMonthDayCellsHeight(offset, 100);
+            });
+        }
+
+        vm.initialized = true;
+    }
+
+    // For a given rowOffset, resize all cells to the specified height
+    function updateMonthDayCellsHeight(offset, height) {
+        var cells = document.querySelectorAll('.month-day-' + offset);
+        cells.forEach(cell => cell.style.height = height + 'px');
+    }
+
+    function getSidebarWidth() {
+        var element = document.querySelector('.io-sidebar');
+        return element ? element.offsetWidth : 0;
+    }
+
+    // On sizebar width change, we must also resize the month cells
+    $scope.$watch(function() { return getSidebarWidth(); }, function(newWidth, oldWidth) {
+        if(vm.initialized && newWidth !== oldWidth) {
+            resizeMonthCells();
+        }
+    });
+
+    // On expanded view toggle, we must also resize the month cells
+    $scope.$watch('vm.calendarCtrl.expandedMonthView', function(newVal, oldVal) {
+        if(newVal !== oldVal) {
+            vm.initialized = false;
+            $timeout(() => resizeMonthCells(), 50);
+        }
+    });
+
+    // On text view toggle, we must also resize the month cells
+    $scope.$watch('vm.calendarCtrl.textView', function(newVal, oldVal) {
+        if(newVal !== oldVal) {
+            vm.initialized = false;
+            $timeout(() => resizeMonthCells(), 50);
+        }
+    });
+
+    // On window resize, we must also resize the month cells
+    angular.element($window).bind('resize', function() {
+        resizeMonthCells();
+    });
+
+    vm.eventsListClass = function (offset) {
+        var expanded = vm.calendarCtrl.expandedMonthView ? ' ' : ' unexpanded ';
+        return 'events-list' + expanded + 'events-list-' + offset;
+    }
+
+    vm.textView = function () {
+        return vm.calendarCtrl.textView;
+    }
+
+    vm.textViewDisplay = function (event) {
+        return event.name || event.title;
+    }
+
+    vm.badgeImportantStyle = function () {
+        return {
+            backgroundColor: (vm.calendarCtrl.badgeColor || '#b94a48')
+        };
     }
 
     $scope.$on('calendar.refreshView', function() {
@@ -2621,6 +2714,9 @@ angular
           }
         });
       }
+
+      // Wait a bit for elements to initialize
+      $timeout(() => resizeMonthCells(), 1250);
 
     });
 
@@ -2971,6 +3067,12 @@ angular
           }
         });
       }
+    }
+
+    vm.badgeImportantStyle = function () {
+        return {
+            backgroundColor: (vm.calendarCtrl.badgeColor || '#b94a48')
+        };
     }
 
     $scope.$on('calendar.refreshView', function() {
