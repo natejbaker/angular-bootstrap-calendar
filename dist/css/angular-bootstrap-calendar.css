@@ -10,7 +10,6 @@ mwl-calendar [class*="cal-cell"] {
   min-height: 1px;
 }
 mwl-calendar .cal-row-fluid {
-  overflow: hidden;
   width: 100%;
   *zoom: 1;
 }
@@ -582,6 +581,7 @@ mwl-calendar .cal-year-box a.event-item-action {
 mwl-calendar .events-list {
   padding-left: 5px;
   overflow-y: auto;
+  width: 100%;
 }
 mwl-calendar .unexpanded {
   max-height: 47px;
@@ -859,4 +859,10 @@ mwl-calendar .cal-event-list .event.pull-left {
 mwl-calendar .day-highlight:hover,
 mwl-calendar .day-highlight {
   background-color: #dddddd;
+}
+mwl-calendar .event-container {
+  width: 100%;
+  float: left;
+  margin-bottom: 0;
+  text-align: left;
 }
