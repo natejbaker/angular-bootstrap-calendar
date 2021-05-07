@@ -1200,7 +1200,7 @@ module.exports = "<div\n  mwl-droppable\n  on-drop=\"vm.handleEventDrop(dropData
 /* 14 */
 /***/ (function(module, exports) {
 
-module.exports = "<div ng-class=\"vm.eventsListClass(rowOffset)\" ng-show=\"day.events.length > 0\">\n  <p class=\"event-container\" ng-if=\"vm.textView()\" ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"><a    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.calendarEventTitle.monthViewTooltip(event) | calendarTrustAsHtml\"\n    href=\"#{{event.url}}\"\n    ng-style=\"{color: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden', wordBreak: 'break-word'}\" class=\"pull-left\" ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\">{{ vm.textViewDisplay(event) | calendarTrustAsHtml }}</a></p> <a\n    ng-if=\"!vm.textView()\"    ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"\n    href=\"#{{event.url}}\"\n    ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\"\n    class=\"pull-left event\"\n    ng-class=\"event.cssClass\"\n    ng-style=\"{backgroundColor: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden'}\"\n    ng-mousedown=\"$event.stopPropagation()\"\n    ng-mouseenter=\"vm.highlightEvent(event, true)\"\n    ng-mouseleave=\"vm.highlightEvent(event, false)\"\n    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.calendarEventTitle.monthViewTooltip(event) | calendarTrustAsHtml\"\n    mwl-draggable=\"event.draggable === true\"\n    drop-data=\"{event: event, draggedFromDate: day.date.toDate()}\"\n    auto-scroll=\"vm.draggableAutoScroll\">\n  </a>\n</div>\n";
+module.exports = "<div ng-class=\"vm.eventsListClass(rowOffset)\" ng-show=\"day.events.length > 0\">\n  <p class=\"event-container\" ng-if=\"vm.textView()\" ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"><a    ng-mouseenter=\"vm.highlightEvent(event, true)\" ng-mouseleave=\"vm.highlightEvent(event, false)\"\n    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.calendarEventTitle.monthViewTooltip(event) | calendarTrustAsHtml\"\n    href=\"#{{event.url}}\"\n    ng-style=\"{color: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden', wordBreak: 'break-word'}\" class=\"pull-left\" ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\"> <i ng-if=\"vm.displayArrow(rowOffset, $parent.$parent.$index, event)\" class=\"fas fa-long-arrow-alt-right\"></i> {{ vm.textViewDisplay(event) | calendarTrustAsHtml }}</a></p> <a\n    ng-if=\"!vm.textView()\"    ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"\n    href=\"#{{event.url}}\"\n    ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\"\n    class=\"pull-left event\"\n    ng-class=\"event.cssClass\"\n    ng-style=\"{backgroundColor: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden'}\"\n    ng-mousedown=\"$event.stopPropagation()\"\n    ng-mouseenter=\"vm.highlightEvent(event, true)\"\n    ng-mouseleave=\"vm.highlightEvent(event, false)\"\n    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.calendarEventTitle.monthViewTooltip(event) | calendarTrustAsHtml\"\n    mwl-draggable=\"event.draggable === true\"\n    drop-data=\"{event: event, draggedFromDate: day.date.toDate()}\"\n    auto-scroll=\"vm.draggableAutoScroll\">\n  </a>\n</div>\n";
 
 /***/ }),
 /* 15 */
@@ -2754,14 +2754,33 @@ angular
         delete day.highlightClass;
         delete day.backgroundColor;
         if (shouldAddClass) {
-          var dayContainsEvent = day.events.indexOf(event) > -1;
-          if (dayContainsEvent) {
+          if (vm.dayContainsEvent(day.events, event.id)) {
             day.backgroundColor = event.color ? event.color.secondary : '';
           }
         }
       });
 
     };
+
+    vm.dayContainsEvent = function (events, eventId) {
+        for(var event of events) {
+            if(event.id === eventId) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    vm.displayArrow = function(offset, index, event) {
+        for(var i = 0; i < vm.view.length; ++i) {
+            for(var j = 0; j < vm.view[i].events.length; ++j) {
+                if(vm.view[i].events[j].id === event.id) {
+                    return (offset + index) > i;
+                }
+            }
+        }
+        return false;
+    }
 
     vm.handleEventDrop = function(event, newDayDate, draggedFromDate) {
 
