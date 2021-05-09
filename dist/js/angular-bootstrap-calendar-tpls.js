@@ -1200,7 +1200,7 @@ module.exports = "<div\n  mwl-droppable\n  on-drop=\"vm.handleEventDrop(dropData
 /* 14 */
 /***/ (function(module, exports) {
 
-module.exports = "<div ng-class=\"vm.eventsListClass(rowOffset)\" ng-show=\"day.events.length > 0\">\n  <p class=\"event-container\" ng-if=\"vm.textView()\" ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"><a    ng-mouseenter=\"vm.highlightEvent(event, true)\" ng-mouseleave=\"vm.highlightEvent(event, false)\"\n    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.calendarEventTitle.monthViewTooltip(event) | calendarTrustAsHtml\"\n    href=\"#{{event.url}}\"\n    ng-style=\"{color: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden', wordBreak: 'break-word'}\" class=\"pull-left\" ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\"> <i ng-if=\"vm.displayArrow(rowOffset, $parent.$parent.$index, event)\" class=\"fas fa-long-arrow-alt-right\"></i> {{ vm.textViewDisplay(event) | calendarTrustAsHtml }}</a></p> <a\n    ng-if=\"!vm.textView()\"    ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"\n    href=\"#{{event.url}}\"\n    ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\"\n    class=\"pull-left event\"\n    ng-class=\"event.cssClass\"\n    ng-style=\"{backgroundColor: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden'}\"\n    ng-mousedown=\"$event.stopPropagation()\"\n    ng-mouseenter=\"vm.highlightEvent(event, true)\"\n    ng-mouseleave=\"vm.highlightEvent(event, false)\"\n    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.calendarEventTitle.monthViewTooltip(event) | calendarTrustAsHtml\"\n    mwl-draggable=\"event.draggable === true\"\n    drop-data=\"{event: event, draggedFromDate: day.date.toDate()}\"\n    auto-scroll=\"vm.draggableAutoScroll\">\n  </a>\n</div>\n";
+module.exports = "<div ng-class=\"vm.eventsListClass(rowOffset)\" ng-show=\"day.events.length > 0\">\n  <p class=\"event-container\" ng-if=\"vm.textView()\" ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"><a    ng-mouseenter=\"vm.highlightEvent(event, true, rowOffset, $parent.$parent.$index)\" ng-mouseleave=\"vm.highlightEvent(event, false, rowOffset, $parent.$parent.$index)\"\n    tooltip-is-open=\"vm.tooltipIsOpen(event, rowOffset, $parent.$parent.$index)\"    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.eventTooltipText[event.id] | calendarTrustAsHtml\"\n    href=\"#{{event.url}}\"\n    ng-style=\"{color: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden', wordBreak: 'break-word'}\" class=\"pull-left\" ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\"> <i ng-if=\"vm.displayArrow(rowOffset, $parent.$parent.$index, event)\" class=\"fas fa-long-arrow-alt-right\"></i> {{ vm.textViewDisplay(event) | calendarTrustAsHtml }}</a></p> <a\n    ng-if=\"!vm.textView()\"    ng-repeat=\"event in day.events | orderBy:'startsAt' track by event.calendarEventId\"\n    href=\"#{{event.url}}\"\n    ng-click=\"$event.stopPropagation(); vm.onEventClick({calendarEvent: event})\"\n    class=\"pull-left event\"\n    ng-class=\"event.cssClass\"\n    ng-style=\"{backgroundColor: event.color.primary, visibility: vm.initialized ? 'visible' : 'hidden'}\"\n    ng-mousedown=\"$event.stopPropagation()\"\n    ng-mouseenter=\"vm.highlightEvent(event, true, rowOffset, $parent.$parent.$index)\"\n    ng-mouseleave=\"vm.highlightEvent(event, false, rowOffset, $parent.$parent.$index)\"\n    tooltip-is-open=\"vm.tooltipIsOpen(event, rowOffset, $parent.$parent.$index)\"    tooltip-append-to-body=\"true\"\n    uib-tooltip-html=\"vm.eventTooltipText[event.id] | calendarTrustAsHtml\"\n    mwl-draggable=\"event.draggable === true\"\n    drop-data=\"{event: event, draggedFromDate: day.date.toDate()}\"\n    auto-scroll=\"vm.draggableAutoScroll\">\n  </a>\n</div>\n";
 
 /***/ }),
 /* 15 */
@@ -1406,6 +1406,8 @@ angular
         view: '=',
         expandedMonthView: '<',
         textView: '<',
+        fetchUri: '<',
+        fetchDebounce: '<',
         badgeColor: '<',
         viewTitle: '=?',
         viewDate: '=',
@@ -2590,6 +2592,9 @@ angular
     vm.calendarConfig = calendarConfig;
     vm.calendarEventTitle = calendarEventTitle;
     vm.openRowIndex = null;
+    vm.fetchRequest = null;
+    vm.eventTooltipText = {};
+    vm.isHovering = {};
 
     function toggleCell() {
       vm.openRowIndex = null;
@@ -2748,7 +2753,18 @@ angular
 
     };
 
-    vm.highlightEvent = function(event, shouldAddClass) {
+    vm.toolTipKey = function (event, offset, index) {
+      return offset + ' ' + index + ' ' + event.id;
+    }
+
+    vm.tooltipIsOpen = function (event, offset, index) {
+      var key = vm.toolTipKey(event, offset, index);
+      return !!vm.eventTooltipText[event.id] && !!vm.isHovering[key];
+    };
+
+    vm.highlightEvent = function(event, shouldAddClass, offset, index) {
+      var hoverKey = vm.toolTipKey(event, offset, index);
+      vm.isHovering[hoverKey] = shouldAddClass;
 
       vm.view.forEach(function(day) {
         delete day.highlightClass;
@@ -2760,27 +2776,53 @@ angular
         }
       });
 
+      if(shouldAddClass) {
+        var request = vm.fetchRequest = new Date();
+        $timeout(() => {
+          if(vm.shouldFetchTemplate(event.id, hoverKey, request)) {
+            vm.fetchTooltipTemplate(event);
+          }
+        }, vm.calendarCtrl.fetchDebounce || 0);
+      }
+
+    };
+
+    vm.shouldFetchTemplate = function (eventId, key, request) {
+      return request === vm.fetchRequest && !vm.eventTooltipText[eventId] && !!vm.isHovering[key];
+    };
+
+    vm.fetchTooltipTemplate = function(event) {
+      fetch(vm.calendarCtrl.fetchUri + '?action=fill_template&id=' + event.id)
+          .then(response => response.json())
+          .then(data => vm.handleTemplateResponse(event, data));
+    };
+
+    vm.handleTemplateResponse = function (event, data) {
+      var defaultText = vm.calendarEventTitle.monthViewTooltip(event);
+      $timeout(() => {
+          vm.eventTooltipText[event.id] = data.template ? data.template : defaultText;
+      });
     };
 
     vm.dayContainsEvent = function (events, eventId) {
-        for(var event of events) {
-            if(event.id === eventId) {
-                return true;
-            }
-        }
-        return false;
+      for(var event of events) {
+          if(event.id === eventId) {
+              return true;
+          }
+      }
+      return false;
     };
 
     vm.displayArrow = function(offset, index, event) {
-        for(var i = 0; i < vm.view.length; ++i) {
-            for(var j = 0; j < vm.view[i].events.length; ++j) {
-                if(vm.view[i].events[j].id === event.id) {
-                    return (offset + index) > i;
-                }
-            }
-        }
-        return false;
-    }
+      for(var i = 0; i < vm.view.length; ++i) {
+          for(var j = 0; j < vm.view[i].events.length; ++j) {
+              if(vm.view[i].events[j].id === event.id) {
+                  return (offset + index) > i;
+              }
+          }
+      }
+      return false;
+    };
 
     vm.handleEventDrop = function(event, newDayDate, draggedFromDate) {
 
