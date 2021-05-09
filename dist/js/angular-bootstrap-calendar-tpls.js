@@ -2800,26 +2800,26 @@ angular
     vm.handleTemplateResponse = function (event, data) {
       var defaultText = vm.calendarEventTitle.monthViewTooltip(event);
       $timeout(() => {
-          vm.eventTooltipText[event.id] = data.template ? data.template : defaultText;
+        vm.eventTooltipText[event.id] = data.template ? data.template : defaultText;
       });
     };
 
     vm.dayContainsEvent = function (events, eventId) {
       for(var event of events) {
-          if(event.id === eventId) {
-              return true;
-          }
+        if(event.id === eventId) {
+          return true;
+        }
       }
       return false;
     };
 
     vm.displayArrow = function(offset, index, event) {
       for(var i = 0; i < vm.view.length; ++i) {
-          for(var j = 0; j < vm.view[i].events.length; ++j) {
-              if(vm.view[i].events[j].id === event.id) {
-                  return (offset + index) > i;
-              }
+        for(var j = 0; j < vm.view[i].events.length; ++j) {
+          if(vm.view[i].events[j].id === event.id) {
+            return (offset + index) > i;
           }
+        }
       }
       return false;
     };
