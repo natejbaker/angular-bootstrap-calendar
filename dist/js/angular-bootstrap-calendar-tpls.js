@@ -1194,7 +1194,7 @@ module.exports = "<div class=\"cal-day-panel-hour\">\n\n  <div class=\"cal-day-h
 /* 13 */
 /***/ (function(module, exports) {
 
-module.exports = "<div\n  mwl-droppable\n  on-drop=\"vm.handleEventDrop(dropData.event, day.date, dropData.draggedFromDate)\"\n  mwl-drag-select=\"!!vm.onDateRangeSelect\"\n  on-drag-select-start=\"vm.onDragSelectStart(day)\"\n  on-drag-select-move=\"vm.onDragSelectMove(day)\"\n  on-drag-select-end=\"vm.onDragSelectEnd(day)\"\n  class=\"cal-month-day month-day-{{rowOffset}} {{ day.cssClass }}\"\n  ng-class=\"{\n    'cal-day-outmonth': !day.inMonth,\n    'cal-day-inmonth': day.inMonth,\n    'cal-day-weekend': day.isWeekend,\n    'cal-day-past': day.isPast,\n    'cal-day-today': day.isToday,\n    'cal-day-future': day.isFuture,\n    'cal-day-selected': vm.dateRangeSelect && vm.dateRangeSelect.startDate <= day.date && day.date <= vm.dateRangeSelect.endDate,\n    'cal-day-open': dayIndex === vm.openDayIndex\n  }\">\n\n  <small\n    ng-style=\"vm.badgeImportantStyle()\"    class=\"cal-events-num badge badge-important pull-left\"\n    ng-show=\"day.badgeTotal > 0 && (vm.calendarConfig.displayAllMonthEvents || day.inMonth)\"\n    ng-bind=\"day.badgeTotal\">\n  </small>\n\n  <span\n    class=\"pull-right\"\n    data-cal-date\n    ng-click=\"vm.calendarCtrl.dateClicked(day.date)\"\n    ng-bind=\"day.label\">\n  </span>\n\n  <div class=\"cal-day-tick\" ng-show=\"dayIndex === vm.openDayIndex && (vm.cellAutoOpenDisabled || vm.view[vm.openDayIndex].events.length > 0) && !vm.slideBoxDisabled\">\n    <i class=\"glyphicon glyphicon-chevron-up\"></i>\n    <i class=\"fa fa-chevron-up\"></i>\n  </div>\n\n  <ng-include src=\"vm.customTemplateUrls.calendarMonthCellEvents || vm.calendarConfig.templates.calendarMonthCellEvents\"></ng-include>\n\n  <div class=\"cal-week-box-cell\" ng-if=\"$first && rowHovered\">\n    <span ng-bind=\"vm.getWeekNumberLabel(day)\"></span>\n  </div>\n\n</div>\n";
+module.exports = "<div\n  mwl-droppable\n  on-drop=\"vm.handleEventDrop(dropData.event, day.date, dropData.draggedFromDate)\"\n  mwl-drag-select=\"!!vm.onDateRangeSelect\"\n  on-drag-select-start=\"vm.onDragSelectStart(day)\"\n  on-drag-select-move=\"vm.onDragSelectMove(day)\"\n  on-drag-select-end=\"vm.onDragSelectEnd(day)\"\n  class=\"{{ 'cal-month-day month-day-' + rowOffset + ' ' + day.cssClass }}\"\n  ng-class=\"{\n    'cal-day-outmonth': !day.inMonth,\n    'cal-day-inmonth': day.inMonth,\n    'cal-day-weekend': day.isWeekend,\n    'cal-day-past': day.isPast,\n    'cal-day-today': day.isToday,\n    'cal-day-future': day.isFuture,\n    'cal-day-selected': vm.dateRangeSelect && vm.dateRangeSelect.startDate <= day.date && day.date <= vm.dateRangeSelect.endDate,\n    'cal-day-open': dayIndex === vm.openDayIndex\n  }\">\n\n  <small\n    ng-style=\"vm.badgeImportantStyle()\"    class=\"cal-events-num badge badge-important pull-left\"\n    ng-show=\"day.badgeTotal > 0 && (vm.calendarConfig.displayAllMonthEvents || day.inMonth)\"\n    ng-bind=\"day.badgeTotal\">\n  </small>\n\n  <span\n    class=\"pull-right\"\n    data-cal-date\n    ng-click=\"vm.calendarCtrl.dateClicked(day.date)\"\n    ng-bind=\"day.label\">\n  </span>\n\n  <div class=\"cal-day-tick\" ng-show=\"dayIndex === vm.openDayIndex && (vm.cellAutoOpenDisabled || vm.view[vm.openDayIndex].events.length > 0) && !vm.slideBoxDisabled\">\n    <i class=\"glyphicon glyphicon-chevron-up\"></i>\n    <i class=\"fa fa-chevron-up\"></i>\n  </div>\n\n  <ng-include src=\"vm.customTemplateUrls.calendarMonthCellEvents || vm.calendarConfig.templates.calendarMonthCellEvents\"></ng-include>\n\n  <div class=\"cal-week-box-cell\" ng-if=\"$first && rowHovered\">\n    <span ng-bind=\"vm.getWeekNumberLabel(day)\"></span>\n  </div>\n\n</div>\n";
 
 /***/ }),
 /* 14 */
@@ -2592,7 +2592,7 @@ angular
     vm.calendarConfig = calendarConfig;
     vm.calendarEventTitle = calendarEventTitle;
     vm.openRowIndex = null;
-    vm.fetchRequest = null;
+    vm.lastRequestTime = null;
     vm.eventTooltipText = {};
     vm.isHovering = {};
 
@@ -2759,7 +2759,7 @@ angular
 
     vm.tooltipIsOpen = function (event, offset, index) {
       var key = vm.toolTipKey(event, offset, index);
-      return !!vm.eventTooltipText[event.id] && !!vm.isHovering[key];
+      return !!vm.eventTooltipText[event.id] && vm.isHovering[key];
     };
 
     vm.highlightEvent = function(event, shouldAddClass, offset, index) {
@@ -2777,9 +2777,9 @@ angular
       });
 
       if(shouldAddClass) {
-        var request = vm.fetchRequest = new Date();
+        var requestTime = vm.lastRequestTime = new Date();
         $timeout(() => {
-          if(vm.shouldFetchTemplate(event.id, hoverKey, request)) {
+          if(vm.shouldFetchTemplate(event.id, hoverKey, requestTime)) {
             vm.fetchTooltipTemplate(event);
           }
         }, vm.calendarCtrl.fetchDebounce || 0);
@@ -2787,8 +2787,8 @@ angular
 
     };
 
-    vm.shouldFetchTemplate = function (eventId, key, request) {
-      return request === vm.fetchRequest && !vm.eventTooltipText[eventId] && !!vm.isHovering[key];
+    vm.shouldFetchTemplate = function (eventId, key, requestTime) {
+      return requestTime === vm.lastRequestTime && !vm.eventTooltipText[eventId] && !!vm.isHovering[key];
     };
 
     vm.fetchTooltipTemplate = function(event) {
